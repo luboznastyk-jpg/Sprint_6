@@ -1,0 +1,14 @@
+# Created by venv; see https://docs.python.org/3/library/venv.html
+
+# Игнорируем папку __pycache__
+__pycache__/
+
+# Игнорируем виртуальное окружение
+venv/
+
+# Исключаем файлы с логами
+log/*.log
+
+# Игнорируем папку .pytest_cache
+.pytest_cache/
+
