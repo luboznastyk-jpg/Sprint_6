@@ -1,6 +1,28 @@
-def test_sum():
-    # Выполняем сложение чисел 2 и 2, результат присваиваем переменной sum
-    sum = 2 + 2
-    # Используем оператор assert для проверки правильности результата сложения
-    # Если sum равно 4, тест проходит, иначе возникает AssertionError
-    assert sum == 4
+import pytest
+import allure
+from pages.Main_page import MainPage
+from data import FAQ_DATA
+
+
+class TestFaq:
+    @allure.title('Отображение ответа в блоке FAQ')
+    @allure.description('Проверка на соответствие вопросов и ответов')
+    @pytest.mark.parametrize(
+        'index, expected_answer',
+        [(index, data['answer']) for index, data in FAQ_DATA.items()],
+        ids=[f'faq_{i}' for i in FAQ_DATA.keys()]
+    )
+    def test_faq_answer_opens(self, driver, index, expected_answer):
+        main_page = MainPage(driver)
+
+        with allure.step('Открыть главную страницу'):
+            main_page.open()
+
+        with allure.step('Прокрутить до блока FAQ'):
+            main_page.scroll_to_faq()
+
+        with allure.step(f'Клик по вопросу №{index}'):
+            main_page.click_faq_question(index)
+
+        with allure.step('Проверить текст ответа'):
+            assert main_page.get_faq_answer_text(index) == expected_answer
