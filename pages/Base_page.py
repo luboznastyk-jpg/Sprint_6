@@ -1,27 +1,64 @@
-from selenium import webdriver
-
-from selenium.webdriver.support import expected_conditions
 from selenium.webdriver.support.wait import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
 
-class Base_Page:
-    item = ['локатор']
-    main_title = ['локатор']
-    site_logo = ['локатор']
-    settlement = ['локатор']
-
+class BasePage:
     def __init__(self, driver):
         self.driver = driver
+        self.timeout = 10
+        self.wait = WebDriverWait(self.driver, self.timeout)
 
-    def check_settlement_name(self):
-        actually_settlement = self.driver.find_element(*self.main_title).text
-        expected_settlement = 'населённый пункт'
-        assert actually_settlement == expected_settlement
+    def find(self, locator):
+        return self.driver.find_element(*locator)
+    
+    def open(self, url):
+        self.driver.get(url)
 
-    def select_settlement(self):
-        self.driver.find_element(*self.item).click()
+    def get_current_url(self):
+        return self.driver.current_url
 
-    def set_settlement(self):
-        self.driver.find_element(*self.settlement).send_keys('населённый пункт')
+    def wait_url_to_be(self, url, timeout=None):
+        return self.get_wait(timeout).until(EC.url_to_be(url))
 
-    def wait_for_load_home_page(self):
-        WebDriverWait(self.driver, 3).until(expected_conditions.visibility_of_element_located(self.site_logo))
+    def wait_url_contains(self, text, timeout=None):
+        return self.get_wait(timeout).until(EC.url_contains(text))
+
+    def wait_visible(self, locator, timeout=None):
+        return self.get_wait(timeout).until(EC.visibility_of_element_located(locator))
+
+    def wait_clickable(self, target, timeout=None):
+        return self.get_wait(timeout).until(EC.element_to_be_clickable(target))
+
+    def wait_presence(self, locator, timeout=None):
+        return self.get_wait(timeout).until(EC.presence_of_element_located(locator))
+
+    def wait_presence_all(self, locator, timeout=None):
+        return self.get_wait(timeout).until(EC.presence_of_all_elements_located(locator))
+
+    def click(self, target, timeout=None):
+        element = self.wait_clickable(target, timeout=timeout)
+        element.click()
+        return element
+
+    def type(self, locator, text, timeout=None):
+        element = self.wait_visible(locator, timeout=timeout)
+        element.clear()
+        element.send_keys(text)
+        return element
+
+
+    def scroll_into_view(self, locator, timeout=None):
+        element = self.wait_presence(locator, timeout=timeout)
+        self.driver.execute_script('arguments[0].scrollIntoView(true);', element)
+        return element
+
+    def switch_to_new_tab(self, timeout=None):
+        current_window = self.driver.current_window_handle
+        self.get_wait(timeout).until(EC.number_of_windows_to_be(2))
+
+        for window in self.driver.window_handles:
+            if window != current_window:
+                self.driver.switch_to.window(window)
+                break
+
+    def get_wait(self, timeout):
+        return WebDriverWait(self.driver, timeout if timeout is not None else self.timeout)
