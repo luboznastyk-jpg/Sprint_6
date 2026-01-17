@@ -3,8 +3,6 @@ from selenium import webdriver
 from selenium.webdriver.firefox.service import Service
 from selenium.webdriver.firefox.options import Options
 from pages.Main_page import MainPage
-from url import Urls
-
 
 @pytest.fixture(scope="session")
 def driver():
